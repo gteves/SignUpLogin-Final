@@ -1,0 +1,13 @@
+app.post("/api/login.json", async (req, res) => {
+    try {
+        // Find user by name in MongoDB
+        const user = await Login.findOne({ username: req.body.username });
+        if (!user || user.password !== req.body.password) {
+            return res.status(422).json({ message: "Incorrect username or password" }); // Respond with message if user not found or password is incorrect
+        }
+        res.status(201).json({ message: "Login successful" }); // Render home view template with username and password
+    } catch (error) {
+        console.error(error); // Log error
+        res.status(500).json({ message: "Internal Server Error" }); // Respond with 500 status and error message
+    }
+});
