@@ -1,0 +1,23 @@
+app.post("/api/signup.json", async (req, res) => {
+    try {
+        const newSignup = new Login(req.body);
+
+        // Check if user already exists
+        const existingEmail = await Login.findOne({ email: req.body.email });
+        if (existingEmail) {
+            return res.status(422).json({ message: "Email already in use" }); // Respond with message if user already exists
+        }
+
+        const existingUser = await Login.findOne({ username: req.body.username });
+        if (existingUser) {
+            return res.status(422).json({ message: "Username is already taken" }); // Respond with message if user already exists
+        }
+
+        // Create new user
+        await newSignup.save(); // Create user in MongoDB
+        res.status(201).json({ message: "Signup successful" });
+    } catch (error) {
+        console.error(error); // Log error
+        res.status(500).json({ message: "Internal Server Error" }); // Respond with 500 status and error message
+    }
+});
