@@ -1,0 +1,87 @@
+const signupForm = document.querySelector(".signup-form");
+const messageContainer = document.getElementById("message-container");
+
+signupForm.addEventListener("submit", async (event) => {
+    event.preventDefault(); // Prevent default form submission
+
+    let username = document.getElementById("username").value;
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    // Validate form inputs
+    if (!username || !email || !password) {
+        showMessage("Please fill in all fields", "error");
+        return;
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+        showMessage("Please enter a valid email address", "error");
+        return;
+    }
+
+    // Password validation
+    if (!isValidPassword(password)) {
+        showMessage("Password must meet the requirements", "error");
+        return;
+    }
+
+    try {
+        let response = await fetch("http://localhost:3000/api/signup.json", {
+            method: "POST",
+            headers: { 
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, email, password })
+        });
+
+        let body = await response.json();
+
+        if (response.ok) {
+            showMessage(body.message, "success");
+            setTimeout(() => {
+                window.location.href = "login.html"; // Redirect after 2 seconds
+            }, 2000); // 2000 milliseconds = 2 seconds
+        } else {
+            showMessage(`${body.message} (${response.status})`, "error");
+        }
+    }
+    catch(error) {
+        console.log(error);
+        showMessage(`Error: ${error.message}`, "error");
+    }
+});
+
+function showMessage(message, type) {
+    // Clear previous message
+    messageContainer.innerHTML = "";
+
+    // Create message element
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message", type);
+    messageElement.textContent = message;
+
+    // Append message to container
+    messageContainer.appendChild(messageElement);
+
+    // Show message
+    messageContainer.style.opacity = 1;
+
+    // Hide message after 1 second
+    setTimeout(() => {
+        messageContainer.style.opacity = 0;
+    }, 1000);
+}
+
+function isValidEmail(email) {
+    // Email format validation using regular expression
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function isValidPassword(password) {
+    // Password requirements
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
+}
